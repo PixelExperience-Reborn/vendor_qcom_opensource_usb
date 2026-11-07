@@ -1,0 +1,22 @@
+name: AOSP17 mondrian Qualcomm USB HAL source safety
+on:
+  push:
+    branches:
+      - port/a17-mondrian-usb-aidl-legacy-guard-20261107
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  usb-legacy-source-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: GNU Make product ownership and ConfigFS serial safety tests
+        run: python3 tests/check_aosp17_mondrian_usb.py
+      - name: Explicit limitations
+        run: |
+          echo "SOURCE/GNU MAKE/SHELL ONLY. AOSP17 USB and Gadget AIDL services are NOT built."
+          echo "Blockers: independent mondrian AIDL HAL, vendor ABI, ConfigFS init,"
+          echo "early ADB/recovery, role/PD, SELinux, VINTF/FCM, CTS/VTS and device tests."
