@@ -1,3 +1,8 @@
+# Historical Qualcomm HIDL USB 1.3 / Gadget 1.2 configuration.
+# Do NOT install this legacy USB stack for independent PE-Reborn mondrian.
+# AOSP17 USB and USB Gadget AIDL must use independently reviewed device HALs
+# and init/configfs rules, keeping early boot ADB and recovery functional.
+ifneq ($(TARGET_DEVICE),mondrian)
 PRODUCT_SOONG_NAMESPACES += vendor/qcom/opensource/usb/etc
 
 #
@@ -79,3 +84,5 @@ ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
   PRODUCT_PACKAGES += init.qti.usb.debug.sh
   PRODUCT_PACKAGES += init.qti.usb.debug.rc
 endif
+
+endif # TARGET_DEVICE != mondrian; never include archived HIDL product recipe
