@@ -100,7 +100,8 @@ class UsbSourceGuardTest(unittest.TestCase):
         self.assertEqual(source.count(marker), 1)
         end = "\tsetprop vendor.usb.configfs 1"
         self.assertEqual(source.count(end), 1)
-        part = source.split(marker, 1)[1].split(end, 1)[0]
+        # The marker begins a comment line; skip its remainder before execution.
+        part = source.split(marker, 1)[1].split("\n", 1)[1].split(end, 1)[0]
         self.assertEqual(part.count("/config/usb_gadget/g1/strings/0x409/serialnumber"), 2)
         return part
 
