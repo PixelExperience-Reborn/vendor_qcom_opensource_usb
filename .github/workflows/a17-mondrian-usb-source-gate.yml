@@ -1,0 +1,32 @@
+name: AOSP17 mondrian Qualcomm USB HAL source safety
+on:
+  push:
+    branches:
+      - port/a17-mondrian-usb-aidl-legacy-guard-20261107
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  usb-legacy-source-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: GNU Make product ownership and ConfigFS serial safety tests
+        run: python3 tests/check_aosp17_mondrian_usb.py
+      - name: Verify pinned PE-Reborn AOSP17 manifest and 135-project matrix
+        run: |
+          set -euo pipefail
+          git clone -q --depth 1 --branch port/a17-aosp17-manifest-20261102 \
+            https://github.com/PixelExperience-Reborn/manifest.git "$RUNNER_TEMP/pe-a17-manifest"
+          cd "$RUNNER_TEMP/pe-a17-manifest"
+          test "$(git rev-parse HEAD)" = "59fe3958215698a79c081dd8ab59acdbe4c2f394"
+          python3 tools/validate_aosp17_base_profiles.py
+          python3 -m unittest discover -s tools -p test_aosp17_manifest_entrypoint.py -v
+          python3 tools/validate_135_repository_matrix.py
+      - name: Explicit limitations
+        run: |
+          echo "SOURCE/GNU MAKE/SHELL ONLY. AOSP17 USB and Gadget AIDL services are NOT built."
+          echo "Blockers: independent mondrian AIDL HAL, vendor ABI, ConfigFS init,"
+          echo "early ADB/recovery, role/PD, SELinux, VINTF/FCM, CTS/VTS and device tests."

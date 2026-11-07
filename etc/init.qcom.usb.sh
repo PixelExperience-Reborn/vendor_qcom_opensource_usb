@@ -169,11 +169,18 @@ if [ -d /config/usb_gadget ]; then
 		setprop vendor.usb.product_string "$vendor_model"
 	fi
 
-	# ADB requires valid iSerialNumber; if ro.serialno is missing, use dummy
+	# ADB needs a device-specific iSerialNumber; never invent a shared
+	# fallback (the old literal 1234567 could identify multiple devices).
+	# Use a system-provided serial if init has not populated ConfigFS yet.
 	serialnumber=`cat /config/usb_gadget/g1/strings/0x409/serialnumber 2> /dev/null`
-	if [ "$serialnumber" == "" ]; then
-		serialno=1234567
-		echo $serialno > /config/usb_gadget/g1/strings/0x409/serialnumber
+	if [ -z "$serialnumber" ]; then
+		serialno=`getprop ro.serialno`
+		if [ -z "$serialno" ]; then
+			serialno=`getprop ro.boot.serialno`
+		fi
+		if [ -n "$serialno" ]; then
+			printf '%s' "$serialno" > /config/usb_gadget/g1/strings/0x409/serialnumber
+		fi
 	fi
 	setprop vendor.usb.configfs 1
 fi
